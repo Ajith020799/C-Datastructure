@@ -2,63 +2,99 @@
 #include <stdlib.h>
 
 // Define the structure for a node
-struct node {
+struct Node {
     int data;
-    struct node *link;
+    struct Node* next;
 };
-
-// Function to create a new node
-struct node* create_node(int data) {
-    struct node *new_node = (struct node *)malloc(sizeof(struct node)); //Based on 
-    // our struct size memory allocate agum in case fail achi na NULL assign agum
-    // To know that memory allocated or not we are using the below condition.
-    if (new_node == NULL) {
-        printf("Memory allocation failed!\n");
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (!newNode) {
+        printf("Memory allocation failed\n");
         exit(1);
     }
-    new_node->data = data;
-    new_node->link = NULL;
-    return new_node;
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
 }
-
-// Function to display the linked list
-void display_list(struct node *head) {
-    if (head == NULL) {
-        printf("The list is empty.\n");
+void deleteAtBeginning(struct Node** head) {
+    if (*head == NULL) {
+        printf("List is empty. Cannot delete.\n");
         return;
     }
-    struct node *temp = head;
+    struct Node* temp = *head;
+    *head = (*head)->next;    
+    free(temp);               
+}
+void deleteAtEnd(struct Node** head) {
+    if (*head == NULL) {
+        printf("List is empty. Cannot delete.\n");
+        return;
+    }
+    if ((*head)->next == NULL) {
+        free(*head);
+        *head = NULL;
+        return;
+    }
+    struct Node* temp = *head;
+    while (temp->next->next != NULL) { 
+        temp = temp->next;
+    }
+    free(temp->next);       
+    temp->next = NULL;      
+}
+
+void deleteAtMiddle(struct Node** head, int position) {
+    if (*head == NULL) {
+        printf("List is empty. Cannot delete.\n");
+        return;
+    }
+    if (position == 1) { 
+        deleteAtBeginning(head);
+        return;
+    }
+    struct Node* temp = *head;
+    for (int i = 1; i < position - 1 && temp->next != NULL; i++) {
+        temp = temp->next; 
+    }
+    if (temp->next == NULL) {
+        printf("Position out of bounds.\n");
+        return;
+    }
+    struct Node* nodeToDelete = temp->next; 
+    temp->next = nodeToDelete->next;        
+    free(nodeToDelete);                    
+}
+
+void displayList(struct Node* head) {
+    struct Node* temp = head;
     printf("Linked List: ");
     while (temp != NULL) {
-        printf("%d ", temp->data);
-        temp = temp->link;
+        printf("%d -> ", temp->data);
+        temp = temp->next;
     }
+    printf("NULL\n");
 }
-struct node* insert_at_position(struct node *head, int data, int position) {
-    struct node *new_node = create_node(data);
-    if (position == 1) {
-        new_node->link = head;
-        return new_node;
-    }
-    struct node *temp = head;
-    for (int i = 1; i < position - 1 && temp != NULL; i++) {
-        temp = temp->link;
-    }
-    if (temp == NULL) {
-        printf("Invalid position!\n");
-        free(new_node);
-        return head;
-    }
-    new_node->link = temp->link;
-    temp->link = new_node;
-    return head;
-}
+
 int main() {
-    struct node *head = NULL;
-    head=insert_at_position(head,10,1);
-    head=insert_at_position(head,30,2);
-    head=insert_at_position(head,50,3);
-    head=insert_at_position(head,40,4);
-    head=insert_at_position(head,20,5);
-    display_list(head);
+    struct Node* head = NULL;
+    head = createNode(10);
+    head->next = createNode(20);
+    head->next->next = createNode(30);
+    head->next->next->next = createNode(40);
+    displayList(head);
+
+    printf("Deleting node from the beginning...\n");
+    deleteAtBeginning(&head);
+    displayList(head);
+
+    printf("Deleting node from the end...\n");
+    deleteAtEnd(&head);
+    displayList(head);
+
+    printf("Deleting node from position 2...\n");
+    deleteAtMiddle(&head, 2);
+    displayList(head);
+
+    return 0;
 }
+
